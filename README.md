@@ -1,5 +1,6 @@
 # CodonMoE
 
+(more details and paper link to be updated)
 CodonMoE is a Python package that implements Adaptive Mixture of Codon Reformative Experts (CodonMoE)  for RNA analyses.
 
 ## Installation

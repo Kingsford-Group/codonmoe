@@ -3,6 +3,23 @@
 
 CodonMoE is a Python package that implements Adaptive Mixture of Codon Reformative Experts (CodonMoE)  for RNA analyses.
 
+## Datasets
+
+We include four public mRNA datasets, all bundled as CSVs in `datasets/`. Each file shares the same schema:
+- `Sequence`: RNA sequence (A,U,C,G)
+- `Value`: real-valued target
+- `Dataset`: dataset identifier
+- `Split`: `train` / `valid` / `test`
+
+| Dataset | File |
+| --- | --- |
+| MLOS | `datasets/MLOS.csv` |
+| Tc-Riboswitches | `datasets/Tc-Riboswitches.csv` |
+| mRFP Expression | `datasets/mRFP_Expression.csv` |
+| CoV Vaccine Degradation | `datasets/CoV_Vaccine_Degradation.csv` |
+
+
+
 ## Installation
 
 You can install CodonMoE using below command:

@@ -83,7 +83,7 @@ python -m unittest tests/test_codon_moe.py
 
 ## Citation
 
-If you find this repository useful, please cite our paper: [CodonMoE: DNA Language Models for mRNA Analyses](https://arxiv.org/abs/2508.04739).
+If you find this repository useful, please consider citing our paper: [CodonMoE: DNA Language Models for mRNA Analyses](https://arxiv.org/abs/2508.04739).
 
 ```bibtex
 @article{du2025codonmoe,

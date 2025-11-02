@@ -1,0 +1,25 @@
+# Core dependencies
+torch>=1.7.0
+numpy>=1.19.0
+
+# Data processing
+pandas>=1.1.0
+scikit-learn>=0.24.0
+scipy>=1.5.0
+
+# Experiment tracking
+wandb>=0.12.0
+tqdm>=4.60.0
+matplotlib>=3.3.0
+seaborn>=0.11.0
+
+# Memory profiling (optional, for debugging)
+memory-profiler>=0.60.0
+
+# For integration with pre-trained models
+transformers>=4.0.0
+pytest>=6.0.0
+pytest-cov>=2.10.0
+black>=21.0
+flake8>=3.9.0
+isort>=5.0.0

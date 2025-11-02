@@ -22,12 +22,21 @@ We include four public mRNA datasets, all bundled as CSVs in `datasets/`. Each f
 
 ## Installation
 
-You can install CodonMoE using below command:
+
 
 ```bash
-# pip install codonmoe
-python setup.py install
+conda create -n codonmoe python=3.9 -y
+conda activate codonmoe
+conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia -y 
+git clone https://github.com/Kingsford-Group/codonmoe.git
+cd codonmoe 
+pip install -r requirements.txt 
+pip install -e .
 ```
+
+
+
+
 
 ## API Reference
 

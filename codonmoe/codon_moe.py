@@ -1,7 +1,7 @@
 """
-CodonMoE: Adaptive Mixture of Codon Reformative Experts.
+CodonMoE (CodonMoE-pro): Adaptive Mixture of Codon Reformative Experts.
 
-This module contains the main components of the CodonMoE model, including
+This module contains the main components of the CodonMoE (CodonMoE-pro) model, including
 the LayerNorm, MixtureOfExperts, CodonMoE, and mRNAModel classes.
 """
 
@@ -40,6 +40,47 @@ class LayerNorm(nn.Module):
         std = x.std(-1, keepdim=True)
         return self.gamma * (x - mean) / (std + self.eps) + self.beta
 
+
+class Codon_Cov(nn.Module):
+    """Codon_Cov adapted from TextCNN module for codon-aware sequence regression."""
+
+    def __init__(self, embed_dim: int, labels: int = 1, kernel_num: int = 100, kernel_sizes=(3, 4, 5), dropout: float = 0.1):
+        """
+        Initialize the Codon_Cov module.
+
+        Args:
+            embed_dim (int): Embedding dimension.
+            labels (int): Number of output labels (default: 1 for regression).
+            kernel_num (int): Number of convolutional kernels per size.
+            kernel_sizes (tuple): Tuple of kernel sizes for multi-scale convolution.
+            dropout (float): Dropout rate.
+        """
+        super().__init__()
+        Ci = 1
+        Co = kernel_num
+        Ks = list(kernel_sizes)
+        self.convs = nn.ModuleList([nn.Conv2d(Ci, Co, (K, embed_dim)) for K in Ks])
+        self.dropout = nn.Dropout(dropout)
+        self.fc1 = nn.Linear(len(Ks) * Co, labels)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Perform forward pass.
+
+        Args:
+            x (torch.Tensor): Input tensor of shape (N, L, D).
+
+        Returns:
+            torch.Tensor: Output logits of shape (N, labels).
+        """
+        # x: (N, L, D)
+        x = x.unsqueeze(1) 
+        x = [F.relu(conv(x)).squeeze(3) for conv in self.convs]
+        x = [F.max_pool1d(i, i.size(2)).squeeze(2) for i in x]
+        x = torch.cat(x, 1)
+        x = self.dropout(x)
+        logit = self.fc1(x)  
+        return logit
 
 class MixtureOfExperts(nn.Module):
     """Mixture of Experts implementation."""
@@ -138,6 +179,72 @@ class CodonMoE(nn.Module):
         output = self.fc2(x_new)
         return output
 
+
+class CodonMoEPro(nn.Module):
+    """CodonMoE-Pro: Codon Mixture of Experts Pro."""
+
+    def __init__(
+        self,
+        input_dim: int,
+        num_experts: int = 4,
+        kernel_num: int = 100,
+        kernel_sizes=(3, 4, 5),
+        dropout_rate: float = 0.1,
+        strip_special_tokens: bool = True,
+    ):
+        """
+        Initialize the CodonMoEPro module.
+
+        Args:
+            input_dim (int): The input dimension.
+            num_experts (int): The number of expert networks.
+            kernel_num (int): Number of convolutional kernels per size.
+            kernel_sizes (tuple): Tuple of kernel sizes.
+            dropout_rate (float): The dropout rate for regularization.
+        """
+        super().__init__()
+        self.d_model = input_dim
+        self.strip_special_tokens = strip_special_tokens
+        self.moe = MixtureOfExperts(input_dim * 3, num_experts)
+        self.codon_cov = Codon_Cov(embed_dim=input_dim, labels=1, kernel_num=kernel_num, kernel_sizes=kernel_sizes, dropout=dropout_rate)
+        self.layernorm1 = LayerNorm(input_dim)
+        self.activation = nn.GELU()
+        self.dropout = nn.Dropout(dropout_rate)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Perform forward pass through the CodonMoEPro model.
+
+        Args:
+            x (torch.Tensor): Input tensor of shape (B, L, D).
+
+        Returns:
+            torch.Tensor: Output tensor of shape (B, 1).
+        """
+        B, L, D = x.shape
+        y = x[:, 1:-1, :] if self.strip_special_tokens else x
+        seq_len = y.shape[1]
+        if seq_len % 3 != 0:
+            raise ValueError("Sequence length must be divisible by 3 for codon processing.")
+
+        y_codons = y.view(B, seq_len // 3, 3 * self.d_model)
+        y_moe = self.moe(y_codons)
+        codon_info_full = y_moe.repeat_interleave(3, dim=1)
+        if codon_info_full.shape[1] != y.shape[1]:
+            codon_info_full = F.pad(codon_info_full, (0, 0, 0, y.shape[1] - codon_info_full.shape[1]))
+
+        y_output = y + codon_info_full
+        x_new = x.clone()
+        if self.strip_special_tokens:
+            x_new[:, 1:-1, :] = y_output
+        else:
+            x_new[:, :seq_len, :] = y_output
+
+        x_new = self.layernorm1(x_new)
+        x_new = self.activation(x_new)
+        x_new = self.dropout(x_new)
+        out = self.codon_cov(x_new)  
+        return out
 
 class mRNAModel(nn.Module):
     """mRNA model combining a base model with CodonMoE."""

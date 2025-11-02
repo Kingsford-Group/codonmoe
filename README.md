@@ -42,6 +42,28 @@ Parameters:
 - `num_experts`: Number of expert networks in the Mixture of Experts
 - `dropout_rate`: Dropout rate for regularization
 
+### CodonMoEPro
+
+```python
+CodonMoEPro(
+    input_dim,
+    num_experts=4,
+    kernel_num=100,
+    kernel_sizes=(3, 4, 5),
+    dropout_rate=0.1,
+)
+```
+
+Parameters:
+- `input_dim`: Dimension of the input features
+- `num_experts`: Number of expert networks in the Mixture of Experts
+- `kernel_num`: Number of convolutional kernels per kernel size
+- `kernel_sizes`: Tuple of kernel sizes for multi-scale Codon Convolution
+- `dropout_rate`: Dropout rate for regularization
+
+**CodonMoEPro** is an enhanced version of CodonMoE.
+
+
 ### mRNAModel
 
 ```python

@@ -1,6 +1,6 @@
 # CodonMoE
 
-(more details and paper link to be updated)
+
 CodonMoE is a Python package that implements Adaptive Mixture of Codon Reformative Experts (CodonMoE)  for RNA analyses.
 
 ## Installation
@@ -40,3 +40,18 @@ Parameters:
 ```bash
 python -m unittest tests/test_codon_moe.py
 ```
+
+
+## Citation
+
+If you find this repository useful, please cite our paper: [CodonMoE: DNA Language Models for mRNA Analyses](https://arxiv.org/abs/2508.04739).
+
+```bibtex
+@article{du2025codonmoe,
+  title={CodonMoE: DNA Language Models for mRNA Analyses},
+  author={Du, Shiyi and Liang, Litian and Li, Jiayi and Kingsford, Carl},
+  journal={arXiv preprint arXiv:2508.04739},
+  year={2025}
+}
+```
+
